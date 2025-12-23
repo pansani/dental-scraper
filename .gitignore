@@ -35,6 +35,7 @@ htmlcov/
 
 data/
 exports/
+output/
 *.csv
 *.log
 !pyproject.toml
