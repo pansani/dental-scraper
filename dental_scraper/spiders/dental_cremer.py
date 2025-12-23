@@ -9,34 +9,38 @@ from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 
 from dental_scraper.items import RawProductItem
-from dental_scraper.loaders import DentalSpeedLoader
+from dental_scraper.loaders import DentalCremerLoader
 
 
-class DentalSpeedSpider(CrawlSpider):
-    name = "dental_speed"
-    allowed_domains = ["dentalspeed.com", "www.dentalspeed.com"]
+class DentalCremerSpider(CrawlSpider):
+    name = "dental_cremer"
+    allowed_domains = ["dentalcremer.com.br", "www.dentalcremer.com.br", "cdn.dentalcremer.com.br"]
 
-    PRICE_API_URL = "https://www.dentalspeed.com/rest/V2/hsb_catalog/price"
+    PRICE_API_URL = "https://www.dentalcremer.com.br/rest/V2/hsb_catalog/price"
     PRICE_API_TOKEN = "zziij1y5yvprsfjyyp8i6jhatx7c85fo"
 
     start_urls = [
-        "https://www.dentalspeed.com/descartaveis.html",
-        "https://www.dentalspeed.com/biosseguranca.html",
-        "https://www.dentalspeed.com/moldagem-e-modelo.html",
-        "https://www.dentalspeed.com/anestesicos-e-agulha-gengival.html",
-        "https://www.dentalspeed.com/equipamentos.html",
-        "https://www.dentalspeed.com/pecas-de-mao.html",
-        "https://www.dentalspeed.com/instrumentais.html",
-        "https://www.dentalspeed.com/higiene-oral.html",
-        "https://www.dentalspeed.com/consultorio-odontologico.html",
-        "https://www.dentalspeed.com/moda.html",
-        "https://www.dentalspeed.com/prevencao-e-profilaxia.html",
-        "https://www.dentalspeed.com/papelaria-personalizada.html",
-        "https://www.dentalspeed.com/brocas.html",
-        "https://www.dentalspeed.com/equipamentos-laboratoriais.html",
-        "https://www.dentalspeed.com/fotografia.html",
-        "https://www.dentalspeed.com/limpeza-e-saneantes.html",
-        "https://www.dentalspeed.com/organizadores.html",
+        "https://www.dentalcremer.com.br/dentistica-e-estetica.html",
+        "https://www.dentalcremer.com.br/cirurgia-e-periodontia.html",
+        "https://www.dentalcremer.com.br/endodontia.html",
+        "https://www.dentalcremer.com.br/ortodontia.html",
+        "https://www.dentalcremer.com.br/implantodontia.html",
+        "https://www.dentalcremer.com.br/protese-clinica.html",
+        "https://www.dentalcremer.com.br/protese-laboratorial.html",
+        "https://www.dentalcremer.com.br/harmonizacao-orofacial.html",
+        "https://www.dentalcremer.com.br/radiologia.html",
+        "https://www.dentalcremer.com.br/anestesicos-e-agulha-gengival.html",
+        "https://www.dentalcremer.com.br/biosseguranca.html",
+        "https://www.dentalcremer.com.br/descartaveis.html",
+        "https://www.dentalcremer.com.br/moldagem-e-modelo.html",
+        "https://www.dentalcremer.com.br/equipamentos.html",
+        "https://www.dentalcremer.com.br/instrumentais.html",
+        "https://www.dentalcremer.com.br/higiene-oral.html",
+        "https://www.dentalcremer.com.br/prevencao-e-profilaxia.html",
+        "https://www.dentalcremer.com.br/pecas-de-mao.html",
+        "https://www.dentalcremer.com.br/brocas.html",
+        "https://www.dentalcremer.com.br/cimentos.html",
+        "https://www.dentalcremer.com.br/livraria.html",
     ]
 
     custom_settings = {
@@ -46,20 +50,22 @@ class DentalSpeedSpider(CrawlSpider):
     }
 
     EXCLUDED_PAGES = {
-        "descartaveis.html", "biosseguranca.html", "moldagem-e-modelo.html",
-        "equipamentos.html", "instrumentais.html", "higiene-oral.html",
-        "moda.html", "brocas.html", "ortodontia.html", "endodontia.html",
-        "cirurgia.html", "protese.html", "periodontia.html",
-        "anestesicos-e-agulha-gengival.html", "pecas-de-mao.html",
-        "consultorio-odontologico.html", "prevencao-e-profilaxia.html",
-        "papelaria-personalizada.html", "equipamentos-laboratoriais.html",
-        "fotografia.html", "limpeza-e-saneantes.html", "organizadores.html",
+        "dentistica-e-estetica.html", "cirurgia-e-periodontia.html",
+        "endodontia.html", "ortodontia.html", "implantodontia.html",
+        "protese-clinica.html", "protese-laboratorial.html",
+        "harmonizacao-orofacial.html", "radiologia.html",
+        "anestesicos-e-agulha-gengival.html", "biosseguranca.html",
+        "descartaveis.html", "moldagem-e-modelo.html", "equipamentos.html",
+        "instrumentais.html", "higiene-oral.html", "prevencao-e-profilaxia.html",
+        "pecas-de-mao.html", "brocas.html", "cimentos.html", "livraria.html",
+        "moda.html", "vestuario.html", "para-o-consultorio.html",
     }
 
     EXCLUDED_KEYWORDS = [
         "politica", "fale-com", "sobre", "programa", "cupom",
-        "super-loja", "marcas", "laboratorio", "universitarios",
-        "ofertas-materiais", "checkout", "cart", "login", "register",
+        "super-loja", "marcas", "laboratorio", "estudantes",
+        "ofertas", "checkout", "cart", "login", "register",
+        "lovers", "ciosp", "empresa", "henry-schein",
     ]
 
     rules = (
@@ -120,10 +126,13 @@ class DentalSpeedSpider(CrawlSpider):
             if keyword in path:
                 return False
 
-        return True
+        if re.search(r"-dc\d+\.html$", path, re.IGNORECASE):
+            return True
+
+        return False
 
     def parse_product(self, response: Response):
-        loader = DentalSpeedLoader(response=response)
+        loader = DentalCremerLoader(response=response)
 
         product_data = self._extract_product_json(response)
 
@@ -141,7 +150,7 @@ class DentalSpeedSpider(CrawlSpider):
             self.logger.debug(f"Skipping non-product page: {response.url}")
             return
 
-        loader.add_value("supplier", "Dental Speed")
+        loader.add_value("supplier", "Dental Cremer")
         loader.add_value("external_url", response.url)
         loader.add_value("currency", "BRL")
         loader.add_value("scraped_at", datetime.now().isoformat())
@@ -209,7 +218,7 @@ class DentalSpeedSpider(CrawlSpider):
                     "Authorization": f"Bearer {self.PRICE_API_TOKEN}",
                     "Referer": response.url,
                     "Accept": "application/json",
-                    "Origin": "https://www.dentalspeed.com",
+                    "Origin": "https://www.dentalcremer.com.br",
                 },
                 errback=self.handle_price_error,
                 dont_filter=True,
@@ -258,7 +267,7 @@ class DentalSpeedSpider(CrawlSpider):
 
         if item.get("restricted_sale") and sku:
             yield Request(
-                url=f"https://www.dentalspeed.com/rest/V2/hsb_label/messages/{sku}?device=browser",
+                url=f"https://www.dentalcremer.com.br/rest/V2/hsb_label/messages/{sku}?device=browser",
                 callback=self.parse_messages_api,
                 meta={"item": item, "playwright": False, "dont_obey_robotstxt": True},
                 headers={
@@ -306,7 +315,7 @@ class DentalSpeedSpider(CrawlSpider):
                 pass
         return None
 
-    def _load_price(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_price(self, loader: DentalCremerLoader, response: Response) -> None:
         json_ld_scripts = response.css('script[type="application/ld+json"]::text').getall()
         for script in json_ld_scripts:
             try:
@@ -378,7 +387,7 @@ class DentalSpeedSpider(CrawlSpider):
 
         return None
 
-    def _load_original_price(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_original_price(self, loader: DentalCremerLoader, response: Response) -> None:
         old_data_price = response.css('[data-price-type="oldPrice"]::attr(data-price-amount)').get()
         if old_data_price:
             try:
@@ -400,7 +409,7 @@ class DentalSpeedSpider(CrawlSpider):
                 loader.add_css("original_price", selector)
                 return
 
-    def _load_sku(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_sku(self, loader: DentalCremerLoader, response: Response) -> None:
         ref_text = response.xpath(
             "//*[contains(text(), 'Cod. de Referência:')]/following-sibling::*[1]/text()"
         ).get()
@@ -413,20 +422,20 @@ class DentalSpeedSpider(CrawlSpider):
             "//*[contains(text(), 'Cod. de Referência:')]//text()"
         ).getall()
         for text in full_text:
-            match = re.search(r"(\d+)", text)
+            match = re.search(r"(DC\d+)", text, re.IGNORECASE)
             if match:
-                loader.add_value("external_id", match.group(1))
+                loader.add_value("external_id", match.group(1).upper())
                 return
 
-        match = re.search(r"-(\d+)\.html$", response.url)
+        match = re.search(r"-(dc\d+)\.html$", response.url, re.IGNORECASE)
         if match:
-            loader.add_value("external_id", match.group(1))
+            loader.add_value("external_id", match.group(1).upper())
             return
 
         slug = response.url.split("/")[-1].replace(".html", "")
         loader.add_value("external_id", slug)
 
-    def _load_brand(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_brand(self, loader: DentalCremerLoader, response: Response) -> None:
         specs_list = response.css("tabpanel[aria-label*='Especificações'] li, [role='tabpanel'] li")
         for item in specs_list:
             label = item.css("div:first-child::text, span:first-child::text").get()
@@ -448,7 +457,7 @@ class DentalSpeedSpider(CrawlSpider):
         if brand_link:
             loader.add_value("raw_brand", brand_link)
 
-    def _load_category(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_category(self, loader: DentalCremerLoader, response: Response) -> None:
         breadcrumbs = response.css(
             "nav.breadcrumbs li a::text, ul.breadcrumb li a::text, ol li a::text"
         ).getall()
@@ -456,7 +465,7 @@ class DentalSpeedSpider(CrawlSpider):
             for crumb in breadcrumbs:
                 loader.add_value("raw_category", crumb)
 
-    def _load_availability(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_availability(self, loader: DentalCremerLoader, response: Response) -> None:
         notify_me_selectors = [
             'a:contains("Avise-me quando chegar")',
             'button:contains("Avise-me quando chegar")',
@@ -506,14 +515,14 @@ class DentalSpeedSpider(CrawlSpider):
 
         loader.add_value("in_stock", False)
 
-    def _load_image(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_image(self, loader: DentalCremerLoader, response: Response) -> None:
         hidden_input = response.css("#yv-productImage::attr(value)").get()
-        if hidden_input and 'cdn.dentalspeed.com' in hidden_input:
+        if hidden_input and 'cdn.dentalcremer.com.br' in hidden_input:
             loader.add_value("image_url", hidden_input)
             return
 
         fotorama_href = response.css(".fotorama__stage__frame::attr(href)").get()
-        if fotorama_href and 'cdn.dentalspeed.com' in fotorama_href:
+        if fotorama_href and 'cdn.dentalcremer.com.br' in fotorama_href:
             loader.add_value("image_url", fotorama_href)
             return
 
@@ -525,17 +534,17 @@ class DentalSpeedSpider(CrawlSpider):
         all_images += response.css("img::attr(src)").getall()
 
         for img in all_images:
-            if img and 'cdn.dentalspeed.com' in img and '/produtos/' in img:
+            if img and 'cdn.dentalcremer.com.br' in img and '/produtos/' in img:
                 loader.add_value("image_url", img)
                 return
 
         for img in all_images:
-            if img and 'cdn.dentalspeed.com' in img and '/catalog/' in img:
+            if img and 'cdn.dentalcremer.com.br' in img and '/catalog/' in img:
                 loader.add_value("image_url", img)
                 return
 
 
-    def _load_variants(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_variants(self, loader: DentalCremerLoader, response: Response) -> None:
         options = response.css("select option::text").getall()
         for opt in options:
             opt = opt.strip()
@@ -550,7 +559,7 @@ class DentalSpeedSpider(CrawlSpider):
             for opt in listbox_options:
                 loader.add_value("variants", opt)
 
-    def _load_specifications(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_specifications(self, loader: DentalCremerLoader, response: Response) -> None:
         specs = {}
 
         field_mappings = {
@@ -577,7 +586,7 @@ class DentalSpeedSpider(CrawlSpider):
         if specs:
             loader.add_value("specifications", specs)
 
-    def _load_rating(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_rating(self, loader: DentalCremerLoader, response: Response) -> None:
         rating_text = response.xpath(
             "//div[contains(@class, 'rating') or contains(@class, 'review')]"
             "//div[contains(text(), ',') or contains(text(), '.')][string-length(text()) < 4]/text()"
@@ -601,7 +610,7 @@ class DentalSpeedSpider(CrawlSpider):
         if review_count:
             loader.add_value("review_count", int(review_count))
 
-    def _load_details(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_details(self, loader: DentalCremerLoader, response: Response) -> None:
         details_panel = response.xpath(
             "//div[@role='tabpanel'][.//div[contains(text(), 'Detalhes')]] | "
             "//div[contains(@class, 'tab') and contains(@aria-label, 'Detalhes')]"
@@ -628,7 +637,7 @@ class DentalSpeedSpider(CrawlSpider):
         if details:
             loader.add_value("details", details)
 
-    def _load_restricted_sale(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_restricted_sale(self, loader: DentalCremerLoader, response: Response) -> None:
         restricted_patterns = [
             "venda restrita",
             "venda sob prescrição",
@@ -644,18 +653,18 @@ class DentalSpeedSpider(CrawlSpider):
                 return
         loader.add_value("restricted_sale", False)
 
-    def _load_pdf_urls(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_pdf_urls(self, loader: DentalCremerLoader, response: Response) -> None:
         pdf_links = response.css("a[href$='.pdf']::attr(href)").getall()
         pdf_links += response.xpath("//a[contains(@href, '.pdf')]/@href").getall()
 
         product_pdfs = [
             pdf for pdf in set(pdf_links)
-            if "cdn.dentalspeed.com" in pdf
+            if "cdn.dentalcremer.com.br" in pdf
         ]
         if product_pdfs:
             loader.add_value("pdf_urls", product_pdfs)
 
-    def _load_full_description(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_full_description(self, loader: DentalCremerLoader, response: Response) -> None:
         description_parts = []
 
         details_panel = response.xpath(
@@ -678,7 +687,7 @@ class DentalSpeedSpider(CrawlSpider):
             full_text = "\n".join(description_parts)
             loader.add_value("full_description", full_text)
 
-    def _load_max_qty(self, loader: DentalSpeedLoader, response: Response) -> None:
+    def _load_max_qty(self, loader: DentalCremerLoader, response: Response) -> None:
         qty_limit = response.css("script::text").re_first(r'"qtyLimit"\s*:\s*(\d+)')
         if qty_limit:
             loader.add_value("max_qty_per_order", int(qty_limit))

@@ -161,3 +161,48 @@ class DentalSpeedLoader(ItemLoader):
 
     max_qty_per_order_in = Identity()
     max_qty_per_order_out = TakeFirst()
+
+    pix_price_in = Identity()
+    pix_price_out = TakeFirst()
+
+    installments_in = Identity()
+    installments_out = TakeFirst()
+
+    discount_percent_in = Identity()
+    discount_percent_out = TakeFirst()
+
+    can_scheduled_buy_in = Identity()
+    can_scheduled_buy_out = TakeFirst()
+
+    scheduled_buy_price_in = Identity()
+    scheduled_buy_price_out = TakeFirst()
+
+    restricted_sale_in = Identity()
+    restricted_sale_out = TakeFirst()
+
+    restricted_sale_message_in = Identity()
+    restricted_sale_message_out = TakeFirst()
+
+    pdf_urls_in = Identity()
+    pdf_urls_out = TakeFirst()
+
+    full_description_in = MapCompose(clean_text)
+    full_description_out = TakeFirst()
+
+    ean_in = MapCompose(clean_text)
+    ean_out = TakeFirst()
+
+    anvisa_registration_in = MapCompose(clean_text)
+    anvisa_registration_out = TakeFirst()
+
+    professional_area_in = MapCompose(clean_text)
+    professional_area_out = TakeFirst()
+
+    specialty_in = MapCompose(clean_text)
+    specialty_out = TakeFirst()
+
+    procedure_in = MapCompose(clean_text)
+    procedure_out = TakeFirst()
+
+
+DentalCremerLoader = DentalSpeedLoader

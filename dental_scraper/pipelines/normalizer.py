@@ -59,8 +59,10 @@ class NormalizerPipeline:
         normalized["name"] = name
         normalized["normalized_name"] = normalize_text(name)
 
+        normalized["raw_category_path"] = raw_category if raw_category else ""
         main_cat, sub_cat = normalize_category(raw_category, raw_name)
         normalized["category"] = f"{main_cat} > {sub_cat}"
+        normalized["category_confidence"] = "auto"
 
         description = item.get("raw_description", "")
         normalized["description"] = clean_text(description) if description else ""
