@@ -7,6 +7,7 @@ Compiled from official Scrapy documentation and community resources.
 1. [Testing](#testing)
 2. [Spider Architecture](#spider-architecture)
 3. [Dynamic Content](#dynamic-content)
+   - [API Endpoint Discovery](#5-api-endpoint-discovery-pricestock-apis)
 4. [Item Loaders](#item-loaders)
 5. [Data Persistence](#data-persistence)
 6. [Anti-Bot Measures](#anti-bot-measures)
@@ -392,6 +393,112 @@ def _load_image(self, loader, response):
             loader.add_value("image_url", img)
             return
 ```
+
+### 5. API Endpoint Discovery (Price/Stock APIs)
+
+Some websites load prices, stock status, or other data via internal APIs after the initial page load. Instead of waiting for JavaScript, discover and call these APIs directly.
+
+**How to discover API endpoints:**
+
+1. Open browser DevTools > Network tab
+2. Filter by XHR/Fetch requests
+3. Load the product page and watch for API calls
+4. Look for endpoints like `/rest/`, `/api/`, `/ajax/`
+
+**Real Example: Dental Speed Price API**
+
+The price on product pages is loaded via:
+```
+GET /rest/V2/hsb_catalog/price?sku={SKU}
+Authorization: Bearer {token}
+```
+
+Response:
+```json
+[{"SKU123":{"main":{"price":28.63,"special_price":27.58,"percent_discount":7}}}]
+```
+
+**Implementation pattern:**
+
+```python
+class MySpider(CrawlSpider):
+    PRICE_API_URL = "https://example.com/rest/V2/catalog/price"
+    PRICE_API_TOKEN = "static_token_from_page"  # Found in window.config.token
+
+    def parse_product(self, response):
+        loader = ProductLoader(response=response)
+        # ... extract other data ...
+
+        item = loader.load_item()
+        sku = item.get("external_id")
+
+        # If no price found in HTML, call the price API
+        if not item.get("price") and sku:
+            yield Request(
+                url=f"{self.PRICE_API_URL}?sku={sku}",
+                callback=self.parse_price_api,
+                meta={
+                    "item": item,
+                    "playwright": False,  # No need for browser
+                    "dont_obey_robotstxt": True,  # API often blocked by robots.txt
+                },
+                headers={
+                    "Authorization": f"Bearer {self.PRICE_API_TOKEN}",
+                    "Referer": response.url,
+                    "Accept": "application/json",
+                },
+                errback=self.handle_price_error,
+                dont_filter=True,
+            )
+        else:
+            yield item
+
+    def parse_price_api(self, response):
+        item = response.meta["item"]
+        sku = item.get("external_id")
+
+        try:
+            data = json.loads(response.text)
+            if isinstance(data, list) and len(data) > 0:
+                price_data = data[0].get(sku, {}).get("main", {})
+                price = price_data.get("special_price") or price_data.get("price")
+                if price:
+                    item["price"] = float(price)
+        except (json.JSONDecodeError, TypeError, ValueError):
+            pass
+
+        yield item
+
+    def handle_price_error(self, failure):
+        item = failure.request.meta.get("item")
+        if item:
+            yield item  # Yield without price rather than losing the item
+```
+
+**Finding the API token:**
+
+Tokens are often embedded in the page JavaScript:
+```python
+# In browser console
+window.hsb.token  // or similar global variable
+
+# Via Scrapy, extract from script tags:
+token = response.css("script::text").re_first(r'"token"\s*:\s*"([^"]+)"')
+```
+
+**Bypassing robots.txt for specific requests:**
+
+API endpoints are often blocked by robots.txt. Use `dont_obey_robotstxt` in request meta:
+
+```python
+yield Request(
+    url=api_url,
+    meta={"dont_obey_robotstxt": True},  # Bypass for this request only
+    ...
+)
+```
+
+This respects robots.txt for regular pages while allowing API access.
 
 ---
 

@@ -1,0 +1,27 @@
+{
+  "dental_speed": {
+    "name": "Dental Speed",
+    "website": "https://www.dentalspeed.com",
+    "payment_options": {
+      "credit_card": {
+        "max_installments": 12,
+        "interest_free": true,
+        "description": "até 12x sem juros no cartão de crédito"
+      },
+      "pix": {
+        "discount_percentage": 3,
+        "description": "3% de desconto no Pix"
+      },
+      "boleto": {
+        "max_installments": 8,
+        "interest_free": true,
+        "description": "até 8x sem juros no boleto"
+      }
+    },
+    "shipping": {
+      "free_shipping_threshold": null,
+      "notes": "Frete calculado no checkout"
+    },
+    "updated_at": "2025-12-23"
+  }
+}

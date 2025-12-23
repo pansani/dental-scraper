@@ -21,7 +21,7 @@ class NormalizerPipeline:
         normalized["price"] = item.get("price")
         normalized["original_price"] = item.get("original_price")
         normalized["currency"] = item.get("currency", "BRL")
-        normalized["in_stock"] = item.get("in_stock", True)
+        normalized["in_stock"] = item.get("in_stock", False)
         normalized["image_url"] = item.get("image_url", "")
         normalized["scraped_at"] = item.get("scraped_at", "")
 
@@ -64,5 +64,22 @@ class NormalizerPipeline:
 
         description = item.get("raw_description", "")
         normalized["description"] = clean_text(description) if description else ""
+
+        normalized["ean"] = item.get("ean")
+        normalized["anvisa_registration"] = item.get("anvisa_registration")
+        normalized["restricted_sale"] = item.get("restricted_sale", False)
+        normalized["professional_area"] = item.get("professional_area")
+        normalized["specialty"] = item.get("specialty")
+        normalized["procedure"] = item.get("procedure")
+        normalized["pdf_urls"] = item.get("pdf_urls")
+        normalized["manufacturer_code"] = item.get("manufacturer_code")
+        normalized["specifications"] = item.get("specifications")
+        normalized["pix_price"] = item.get("pix_price")
+        normalized["installments"] = item.get("installments")
+        normalized["discount_percent"] = item.get("discount_percent")
+        normalized["max_qty_per_order"] = item.get("max_qty_per_order")
+        normalized["can_scheduled_buy"] = item.get("can_scheduled_buy")
+        normalized["scheduled_buy_price"] = item.get("scheduled_buy_price")
+        normalized["restricted_sale_message"] = item.get("restricted_sale_message")
 
         return normalized

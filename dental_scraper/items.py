@@ -28,6 +28,21 @@ class RawProductItem(scrapy.Item):
     rating = scrapy.Field()
     review_count = scrapy.Field()
     details = scrapy.Field()
+    ean = scrapy.Field()
+    anvisa_registration = scrapy.Field()
+    restricted_sale = scrapy.Field()
+    professional_area = scrapy.Field()
+    specialty = scrapy.Field()
+    procedure = scrapy.Field()
+    pdf_urls = scrapy.Field()
+    full_description = scrapy.Field()
+    pix_price = scrapy.Field()
+    installments = scrapy.Field()
+    discount_percent = scrapy.Field()
+    max_qty_per_order = scrapy.Field()
+    can_scheduled_buy = scrapy.Field()
+    scheduled_buy_price = scrapy.Field()
+    restricted_sale_message = scrapy.Field()
 
 
 class NormalizedProductItem(scrapy.Item):
@@ -48,6 +63,22 @@ class NormalizedProductItem(scrapy.Item):
     in_stock = scrapy.Field()
     image_url = scrapy.Field()
     scraped_at = scrapy.Field()
+    ean = scrapy.Field()
+    anvisa_registration = scrapy.Field()
+    restricted_sale = scrapy.Field()
+    professional_area = scrapy.Field()
+    specialty = scrapy.Field()
+    procedure = scrapy.Field()
+    pdf_urls = scrapy.Field()
+    manufacturer_code = scrapy.Field()
+    specifications = scrapy.Field()
+    pix_price = scrapy.Field()
+    installments = scrapy.Field()
+    discount_percent = scrapy.Field()
+    max_qty_per_order = scrapy.Field()
+    can_scheduled_buy = scrapy.Field()
+    scheduled_buy_price = scrapy.Field()
+    restricted_sale_message = scrapy.Field()
 
 
 @dataclass
@@ -66,7 +97,7 @@ class Product:
     price: Optional[Decimal] = None
     original_price: Optional[Decimal] = None
     currency: str = "BRL"
-    in_stock: bool = True
+    in_stock: bool = False
     image_url: str = ""
     scraped_at: datetime = field(default_factory=datetime.now)
 

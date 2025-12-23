@@ -158,3 +158,6 @@ class DentalSpeedLoader(ItemLoader):
 
     details_in = Identity()
     details_out = TakeFirst()
+
+    max_qty_per_order_in = Identity()
+    max_qty_per_order_out = TakeFirst()

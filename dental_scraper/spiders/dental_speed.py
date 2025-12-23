@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import datetime
 from urllib.parse import urlparse
@@ -14,6 +15,10 @@ from dental_scraper.loaders import DentalSpeedLoader
 class DentalSpeedSpider(CrawlSpider):
     name = "dental_speed"
     allowed_domains = ["dentalspeed.com", "www.dentalspeed.com"]
+
+    PRICE_API_URL = "https://www.dentalspeed.com/rest/V2/hsb_catalog/price"
+    PRICE_API_TOKEN = "zziij1y5yvprsfjyyp8i6jhatx7c85fo"
+
     start_urls = [
         "https://www.dentalspeed.com/descartaveis.html",
         "https://www.dentalspeed.com/biosseguranca.html",
@@ -35,9 +40,9 @@ class DentalSpeedSpider(CrawlSpider):
     ]
 
     custom_settings = {
-        "DOWNLOAD_DELAY": 3,
+        "DOWNLOAD_DELAY": 0.5,
         "RANDOMIZE_DOWNLOAD_DELAY": True,
-        "CONCURRENT_REQUESTS_PER_DOMAIN": 2,
+        "CONCURRENT_REQUESTS_PER_DOMAIN": 8,
     }
 
     EXCLUDED_PAGES = {
@@ -63,7 +68,6 @@ class DentalSpeedSpider(CrawlSpider):
             process_links="filter_product_links",
             callback="parse_product",
             follow=False,
-            process_request="set_playwright_meta",
             errback="handle_error",
         ),
         Rule(
@@ -77,12 +81,18 @@ class DentalSpeedSpider(CrawlSpider):
         for url in self.start_urls:
             yield Request(
                 url=url,
-                meta={"playwright": True},
+                meta={
+                    "playwright": True,
+                    "playwright_include_page": True,
+                    "playwright_context": "default",
+                },
                 errback=self.handle_error,
             )
 
     def set_playwright_meta(self, request: Request, response: Response) -> Request:
         request.meta["playwright"] = True
+        request.meta["playwright_include_page"] = True
+        request.meta["playwright_context"] = "default"
         return request
 
     def filter_product_links(self, links: list) -> list:
@@ -115,17 +125,19 @@ class DentalSpeedSpider(CrawlSpider):
     def parse_product(self, response: Response):
         loader = DentalSpeedLoader(response=response)
 
+        product_data = self._extract_product_json(response)
+
         name = response.css("h1::text").get()
         if not name:
             name = response.css(".page-title span::text").get()
 
-        if not name:
+        if not name and not product_data:
             self.logger.warning(f"No product name found: {response.url}")
             return
 
         has_sku = response.css("#yv-productId::attr(value)").get()
         has_ref = response.xpath("//*[contains(text(), 'Cod. de Referência:')]").get()
-        if not has_sku and not has_ref:
+        if not has_sku and not has_ref and not product_data:
             self.logger.debug(f"Skipping non-product page: {response.url}")
             return
 
@@ -134,8 +146,22 @@ class DentalSpeedSpider(CrawlSpider):
         loader.add_value("currency", "BRL")
         loader.add_value("scraped_at", datetime.now().isoformat())
 
-        loader.add_css("raw_name", "h1::text")
-        loader.add_css("raw_name", ".page-title span::text")
+        if product_data:
+            if product_data.get("name"):
+                loader.add_value("raw_name", product_data["name"])
+            if product_data.get("price"):
+                loader.add_value("price", float(product_data["price"]))
+            if product_data.get("id"):
+                loader.add_value("external_id", product_data["id"])
+            if product_data.get("brand"):
+                loader.add_value("raw_brand", product_data["brand"])
+            if product_data.get("category"):
+                cat = product_data["category"].split(" - ")[0]
+                loader.add_value("raw_category", cat)
+
+        if not loader.get_collected_values("raw_name"):
+            loader.add_css("raw_name", "h1::text")
+            loader.add_css("raw_name", ".page-title span::text")
 
         subtitle = response.css("h2::text").get()
         if subtitle:
@@ -147,20 +173,158 @@ class DentalSpeedSpider(CrawlSpider):
             loader.add_value("raw_unit", "unidade")
             loader.add_value("raw_quantity", 1)
 
-        self._load_price(loader, response)
-        self._load_sku(loader, response)
-        self._load_brand(loader, response)
-        self._load_category(loader, response)
+        if not loader.get_collected_values("price"):
+            self._load_price(loader, response)
+        if not loader.get_collected_values("external_id"):
+            self._load_sku(loader, response)
+        if not loader.get_collected_values("raw_brand"):
+            self._load_brand(loader, response)
+        if not loader.get_collected_values("raw_category"):
+            self._load_category(loader, response)
+
         self._load_availability(loader, response)
         self._load_image(loader, response)
         self._load_variants(loader, response)
         self._load_specifications(loader, response)
         self._load_rating(loader, response)
         self._load_details(loader, response)
+        self._load_restricted_sale(loader, response)
+        self._load_pdf_urls(loader, response)
+        self._load_full_description(loader, response)
+        self._load_max_qty(loader, response)
 
-        yield loader.load_item()
+        item = loader.load_item()
+        sku = item.get("external_id")
+
+        if sku:
+            yield Request(
+                url=f"{self.PRICE_API_URL}?sku={sku}",
+                callback=self.parse_price_api,
+                meta={
+                    "item": item,
+                    "playwright": False,
+                    "dont_obey_robotstxt": True,
+                },
+                headers={
+                    "Authorization": f"Bearer {self.PRICE_API_TOKEN}",
+                    "Referer": response.url,
+                    "Accept": "application/json",
+                    "Origin": "https://www.dentalspeed.com",
+                },
+                errback=self.handle_price_error,
+                dont_filter=True,
+            )
+        else:
+            yield item
+
+    def parse_price_api(self, response: Response):
+        item = response.meta["item"]
+        sku = item.get("external_id")
+
+        try:
+            data = json.loads(response.text)
+            if isinstance(data, list) and len(data) > 0:
+                product_price = data[0].get(sku, {}).get("main", {})
+                price = product_price.get("special_price") or product_price.get("price")
+                if price:
+                    item["price"] = float(price)
+                    self.logger.debug(f"Got price {price} from API for {sku}")
+
+                original = product_price.get("price")
+                if original and product_price.get("special_price"):
+                    item["original_price"] = float(original)
+
+                pix_price = product_price.get("price_with_discount")
+                if pix_price:
+                    item["pix_price"] = float(pix_price)
+
+                installments = product_price.get("installments")
+                if installments:
+                    item["installments"] = installments
+
+                discount_percent = product_price.get("percent_discount")
+                if discount_percent:
+                    item["discount_percent"] = int(discount_percent)
+
+                can_scheduled = product_price.get("can_scheduledbuy")
+                if can_scheduled is not None:
+                    item["can_scheduled_buy"] = can_scheduled
+
+                scheduled_price = product_price.get("scheduledbuy_price")
+                if scheduled_price:
+                    item["scheduled_buy_price"] = float(scheduled_price)
+        except (json.JSONDecodeError, TypeError, ValueError) as e:
+            self.logger.warning(f"Failed to parse price API response for {sku}: {e}")
+
+        if item.get("restricted_sale") and sku:
+            yield Request(
+                url=f"https://www.dentalspeed.com/rest/V2/hsb_label/messages/{sku}?device=browser",
+                callback=self.parse_messages_api,
+                meta={"item": item, "playwright": False},
+                headers={
+                    "Authorization": f"Bearer {self.PRICE_API_TOKEN}",
+                    "Accept": "application/json",
+                },
+                errback=self.handle_messages_error,
+                dont_filter=True,
+            )
+        else:
+            yield item
+
+    def handle_price_error(self, failure):
+        item = failure.request.meta.get("item")
+        self.logger.warning(f"Price API error: {failure.value}")
+        if item:
+            self.logger.warning(f"Price API failed for {item.get('external_id')}, yielding without price")
+            yield item
+
+    def parse_messages_api(self, response: Response):
+        item = response.meta["item"]
+        try:
+            data = json.loads(response.text)
+            if isinstance(data, list) and len(data) > 0:
+                messages = [msg.get("info") or msg.get("text") for msg in data if msg.get("type") == "alert"]
+                if messages:
+                    item["restricted_sale_message"] = messages[0]
+        except (json.JSONDecodeError, TypeError) as e:
+            self.logger.warning(f"Failed to parse messages API: {e}")
+        yield item
+
+    def handle_messages_error(self, failure):
+        item = failure.request.meta.get("item")
+        self.logger.warning(f"Messages API error: {failure.value}")
+        if item:
+            yield item
+
+    def _extract_product_json(self, response: Response) -> dict | None:
+        pattern = r'"product"\s*:\s*(\{[^}]+\})'
+        match = response.css("script::text").re_first(pattern)
+        if match:
+            try:
+                return json.loads(match)
+            except json.JSONDecodeError:
+                pass
+        return None
 
     def _load_price(self, loader: DentalSpeedLoader, response: Response) -> None:
+        json_ld_scripts = response.css('script[type="application/ld+json"]::text').getall()
+        for script in json_ld_scripts:
+            try:
+                data = json.loads(script)
+                if isinstance(data, dict):
+                    price = self._extract_price_from_json_ld(data)
+                    if price:
+                        loader.add_value("price", price)
+                        return
+                elif isinstance(data, list):
+                    for item in data:
+                        price = self._extract_price_from_json_ld(item)
+                        if price:
+                            loader.add_value("price", price)
+                            return
+            except (json.JSONDecodeError, TypeError):
+                continue
+
         data_price = response.css("[data-price-amount]::attr(data-price-amount)").get()
         if data_price:
             try:
@@ -191,6 +355,28 @@ class DentalSpeedSpider(CrawlSpider):
                 loader.add_css("price", selector)
                 self._load_original_price(loader, response)
                 return
+
+    def _extract_price_from_json_ld(self, data: dict) -> float | None:
+        if not isinstance(data, dict):
+            return None
+
+        if data.get("@type") == "Product":
+            offers = data.get("offers", {})
+            if isinstance(offers, dict):
+                price = offers.get("price")
+                if price:
+                    try:
+                        return float(price)
+                    except (ValueError, TypeError):
+                        pass
+
+        if "price" in data:
+            try:
+                return float(data["price"])
+            except (ValueError, TypeError):
+                pass
+
+        return None
 
     def _load_original_price(self, loader: DentalSpeedLoader, response: Response) -> None:
         old_data_price = response.css('[data-price-type="oldPrice"]::attr(data-price-amount)').get()
@@ -271,6 +457,24 @@ class DentalSpeedSpider(CrawlSpider):
                 loader.add_value("raw_category", crumb)
 
     def _load_availability(self, loader: DentalSpeedLoader, response: Response) -> None:
+        notify_me_selectors = [
+            'a:contains("Avise-me quando chegar")',
+            'button:contains("Avise-me quando chegar")',
+            '[href*="productalert/add/stock"]',
+        ]
+
+        for selector in notify_me_selectors:
+            if response.css(selector).get():
+                loader.add_value("in_stock", False)
+                return
+
+        notify_xpath = response.xpath(
+            "//*[contains(text(), 'Avise-me quando chegar')]"
+        ).get()
+        if notify_xpath:
+            loader.add_value("in_stock", False)
+            return
+
         out_of_stock_selectors = [
             ".stock.unavailable",
             ".out-of-stock",
@@ -283,11 +487,24 @@ class DentalSpeedSpider(CrawlSpider):
                 return
 
         availability = response.css('[itemprop="availability"]::attr(href)').get()
-        if availability and "InStock" in availability:
+        if availability:
+            if "InStock" in availability:
+                loader.add_value("in_stock", True)
+                return
+            if "OutOfStock" in availability:
+                loader.add_value("in_stock", False)
+                return
+
+        add_to_cart = response.css(
+            'button:contains("Adicionar ao Carrinho"), '
+            'button[data-action="add-to-cart"], '
+            '#product-addtocart-button'
+        ).get()
+        if add_to_cart:
             loader.add_value("in_stock", True)
             return
 
-        loader.add_value("in_stock", True)
+        loader.add_value("in_stock", False)
 
     def _load_image(self, loader: DentalSpeedLoader, response: Response) -> None:
         hidden_input = response.css("#yv-productImage::attr(value)").get()
@@ -335,23 +552,27 @@ class DentalSpeedSpider(CrawlSpider):
 
     def _load_specifications(self, loader: DentalSpeedLoader, response: Response) -> None:
         specs = {}
-        spec_items = response.xpath(
-            "//li[contains(@class, '') and .//div[contains(text(), 'Marca') or "
-            "contains(text(), 'Código') or contains(text(), 'Área') or "
-            "contains(text(), 'Apresentação') or contains(text(), 'Cor') or "
-            "contains(text(), 'Especialidade') or contains(text(), 'Tipo') or "
-            "contains(text(), 'Procedimento')]]"
-        )
 
-        for item in response.css("[role='tabpanel'] li"):
-            divs = item.css("div::text").getall()
-            if len(divs) >= 2:
-                key = divs[0].strip()
-                value = divs[1].strip()
-                if key and value:
-                    specs[key] = value
-                    if key.lower() == "código do fabricante":
-                        loader.add_value("manufacturer_code", value)
+        field_mappings = {
+            "ean (código de barras)": "ean",
+            "ean": "ean",
+            "registro anvisa": "anvisa_registration",
+            "área profissional": "professional_area",
+            "especialidade": "specialty",
+            "procedimento": "procedure",
+            "código do fabricante": "manufacturer_code",
+        }
+
+        for item in response.css("li.line-attr-product"):
+            key = item.css("span.type::text").get()
+            value = item.css("span.value::text").get()
+            if key and value:
+                key = key.strip()
+                value = value.strip()
+                specs[key] = value
+                key_lower = key.lower()
+                if key_lower in field_mappings:
+                    loader.add_value(field_mappings[key_lower], value)
 
         if specs:
             loader.add_value("specifications", specs)
@@ -406,6 +627,61 @@ class DentalSpeedSpider(CrawlSpider):
 
         if details:
             loader.add_value("details", details)
+
+    def _load_restricted_sale(self, loader: DentalSpeedLoader, response: Response) -> None:
+        restricted_patterns = [
+            "venda restrita",
+            "venda sob prescrição",
+            "uso exclusivamente profissional",
+            "produto controlado",
+        ]
+        page_text = response.xpath("//body//text()").getall()
+        page_text = " ".join(page_text).lower()
+
+        for pattern in restricted_patterns:
+            if pattern in page_text:
+                loader.add_value("restricted_sale", True)
+                return
+        loader.add_value("restricted_sale", False)
+
+    def _load_pdf_urls(self, loader: DentalSpeedLoader, response: Response) -> None:
+        pdf_links = response.css("a[href$='.pdf']::attr(href)").getall()
+        pdf_links += response.xpath("//a[contains(@href, '.pdf')]/@href").getall()
+
+        product_pdfs = [
+            pdf for pdf in set(pdf_links)
+            if "cdn.dentalspeed.com" in pdf
+        ]
+        if product_pdfs:
+            loader.add_value("pdf_urls", product_pdfs)
+
+    def _load_full_description(self, loader: DentalSpeedLoader, response: Response) -> None:
+        description_parts = []
+
+        details_panel = response.xpath(
+            "//div[@role='tabpanel']//div[contains(@class, 'prose')] | "
+            "//div[@role='tabpanel']//div[contains(@class, 'content')] | "
+            "//div[contains(@class, 'product-info')]//div[contains(@class, 'description')]"
+        )
+
+        if details_panel:
+            texts = details_panel.xpath(".//text()").getall()
+            description_parts.extend([t.strip() for t in texts if t.strip()])
+
+        if not description_parts:
+            all_tabs = response.css("[role='tabpanel']")
+            for tab in all_tabs:
+                paragraphs = tab.css("p::text, div.prose::text, li::text").getall()
+                description_parts.extend([p.strip() for p in paragraphs if p.strip() and len(p.strip()) > 10])
+
+        if description_parts:
+            full_text = "\n".join(description_parts)
+            loader.add_value("full_description", full_text)
+
+    def _load_max_qty(self, loader: DentalSpeedLoader, response: Response) -> None:
+        qty_limit = response.css("script::text").re_first(r'"qtyLimit"\s*:\s*(\d+)')
+        if qty_limit:
+            loader.add_value("max_qty_per_order", int(qty_limit))
 
     def handle_error(self, failure) -> None:
         self.logger.error(f"Request failed: {failure.request.url}")

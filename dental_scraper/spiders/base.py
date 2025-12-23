@@ -64,7 +64,7 @@ class BaseDentalSpider(scrapy.Spider):
         item["raw_name"] = raw_name
         item["price"] = price
         item["currency"] = kwargs.get("currency", "BRL")
-        item["in_stock"] = kwargs.get("in_stock", True)
+        item["in_stock"] = kwargs.get("in_stock", False)
         item["scraped_at"] = datetime.now().isoformat()
 
         optional_fields = [
