@@ -32,8 +32,8 @@ def exact_match(product_a: Product, product_b: Product) -> Optional[Match]:
 def fuzzy_match(
     product_a: Product,
     product_b: Product,
-    threshold: float = 0.70,
-    min_name_similarity: float = 0.60,
+    threshold: float = 0.80,
+    min_name_similarity: float = 0.75,
 ) -> Optional[Match]:
     weights = {
         "name": 0.40,
