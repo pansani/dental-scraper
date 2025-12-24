@@ -1,10 +1,23 @@
+import re
 import psycopg2
 from itemadapter import ItemAdapter
+from rapidfuzz import fuzz
 
 SUPPLIER_MAPPING = {
     "dental_speed": ("Dental Speed", "dental-speed"),
     "dental_cremer": ("Dental Cremer", "dental-cremer"),
 }
+
+SIMILARITY_THRESHOLD = 85
+
+
+def normalize_name(name):
+    if not name:
+        return ""
+    name = name.lower()
+    name = re.sub(r"[^\w\s]", " ", name)
+    name = re.sub(r"\s+", " ", name).strip()
+    return name
 
 
 class PostgresPipeline:
@@ -12,6 +25,7 @@ class PostgresPipeline:
         self.db_config = db_config
         self.conn = None
         self.supplier_cache = {}
+        self.product_cache = {}
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -28,6 +42,14 @@ class PostgresPipeline:
     def open_spider(self, spider):
         self.conn = psycopg2.connect(**self.db_config)
         spider.logger.info(f"Connected to PostgreSQL: {self.db_config['dbname']}")
+        self._load_product_cache(spider)
+
+    def _load_product_cache(self, spider):
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT id, normalized_name FROM products WHERE normalized_name IS NOT NULL")
+            for row in cur.fetchall():
+                self.product_cache[row[0]] = row[1]
+        spider.logger.info(f"Loaded {len(self.product_cache)} products into cache")
 
     def close_spider(self, spider):
         if self.conn:
@@ -168,79 +190,47 @@ class PostgresPipeline:
         )
 
     def _try_link_to_master(self, cur, supplier_product_id, adapter):
-        ean = adapter.get("ean")
-        anvisa = adapter.get("anvisa_registration")
-        mfg_code = adapter.get("manufacturer_code")
+        name = adapter.get("name")
+        normalized = normalize_name(name)
 
-        if not ean and not anvisa and not mfg_code:
+        if not normalized:
             return
 
-        master_id = None
+        best_match_id = None
+        best_score = 0
 
-        if ean:
-            cur.execute("SELECT id FROM products WHERE ean = %s LIMIT 1", (ean,))
-            row = cur.fetchone()
-            if row:
-                master_id = row[0]
-            else:
-                master_id = self._create_master_product(cur, adapter, "ean", ean)
+        for product_id, product_name in self.product_cache.items():
+            score = fuzz.ratio(normalized, product_name)
+            if score > best_score and score >= SIMILARITY_THRESHOLD:
+                best_score = score
+                best_match_id = product_id
 
-        elif anvisa:
+        if best_match_id:
             cur.execute(
-                "SELECT id FROM products WHERE anvisa_registration = %s LIMIT 1",
-                (anvisa,),
+                "UPDATE supplier_products SET product_id = %s WHERE id = %s",
+                (best_match_id, supplier_product_id),
             )
-            row = cur.fetchone()
-            if row:
-                master_id = row[0]
-            else:
-                master_id = self._create_master_product(
-                    cur, adapter, "anvisa_registration", anvisa
-                )
-
-        elif mfg_code:
-            cur.execute(
-                "SELECT id FROM products WHERE manufacturer_code = %s LIMIT 1",
-                (mfg_code,),
-            )
-            row = cur.fetchone()
-            if row:
-                master_id = row[0]
-            else:
-                master_id = self._create_master_product(
-                    cur, adapter, "manufacturer_code", mfg_code
-                )
-
-        if master_id:
+        else:
+            master_id = self._create_master_product(cur, adapter, normalized)
             cur.execute(
                 "UPDATE supplier_products SET product_id = %s WHERE id = %s",
                 (master_id, supplier_product_id),
             )
 
-    def _create_master_product(self, cur, adapter, field_name, field_value):
-        columns = [
-            "name",
-            "normalized_name",
-            "brand",
-            "normalized_brand",
-            field_name,
-            "created_at",
-            "updated_at",
-        ]
-        placeholders = ["%s", "%s", "%s", "%s", "%s", "NOW()", "NOW()"]
-
+    def _create_master_product(self, cur, adapter, normalized_name):
         cur.execute(
-            f"""
-            INSERT INTO products ({', '.join(columns)})
-            VALUES ({', '.join(placeholders)})
+            """
+            INSERT INTO products (name, normalized_name, brand, normalized_brand, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, NOW(), NOW())
             RETURNING id
             """,
             (
                 adapter.get("name"),
-                adapter.get("normalized_name"),
+                normalized_name,
                 adapter.get("brand") or adapter.get("normalized_brand"),
                 adapter.get("normalized_brand"),
-                field_value,
             ),
         )
-        return cur.fetchone()[0]
+        master_id = cur.fetchone()[0]
+        self.product_cache[master_id] = normalized_name
+        return master_id
