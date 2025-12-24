@@ -1,5 +1,6 @@
 from .brands import normalize_brand
 from .categories import normalize_category
+from .supplier_mappings import get_supplier_category
 from .text import clean_text, normalize_text
 from .units import normalize_unit
 
@@ -9,4 +10,5 @@ __all__ = [
     "normalize_unit",
     "clean_text",
     "normalize_text",
+    "get_supplier_category",
 ]

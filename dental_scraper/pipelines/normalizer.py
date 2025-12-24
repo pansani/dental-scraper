@@ -2,11 +2,11 @@ from dental_scraper.items import NormalizedProductItem, RawProductItem
 from dental_scraper.normalization import (
     clean_text,
     normalize_brand,
-    normalize_category,
     normalize_text,
     normalize_unit,
 )
 from dental_scraper.normalization.brands import extract_brand_from_name
+from dental_scraper.normalization.supplier_mappings import get_supplier_category
 from dental_scraper.normalization.text import extract_quantity, remove_quantity_from_name
 from dental_scraper.normalization.units import extract_unit_from_name
 
@@ -60,9 +60,15 @@ class NormalizerPipeline:
         normalized["normalized_name"] = normalize_text(name)
 
         normalized["raw_category_path"] = raw_category if raw_category else ""
-        main_cat, sub_cat = normalize_category(raw_category, raw_name)
-        normalized["category"] = f"{main_cat} > {sub_cat}"
-        normalized["category_confidence"] = "auto"
+        supplier = item.get("supplier", "")
+        mapped = get_supplier_category(supplier, raw_category)
+        if mapped:
+            main_cat, sub_cat = mapped
+            normalized["category"] = f"{main_cat} > {sub_cat}"
+            normalized["category_confidence"] = "confirmed"
+        else:
+            normalized["category"] = "Outros > Geral"
+            normalized["category_confidence"] = "unmapped"
 
         description = item.get("raw_description", "")
         normalized["description"] = clean_text(description) if description else ""

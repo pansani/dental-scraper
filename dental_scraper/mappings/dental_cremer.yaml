@@ -1,0 +1,154 @@
+supplier: dental_cremer
+mappings:
+  # Anestésicos
+  "Anestésico": "Consumíveis > Anestésicos"
+  "Anestésico Injetável": "Consumíveis > Anestésicos"
+  "Anestésico Tópico": "Consumíveis > Anestésicos"
+  "Agulha Gengival": "Consumíveis > Anestésicos"
+
+  # Descartáveis
+  "Algodão": "Consumíveis > Descartáveis"
+  "Babador Descartável": "Consumíveis > Descartáveis"
+  "Gaze": "Consumíveis > Descartáveis"
+  "Guardanapo": "Consumíveis > Descartáveis"
+  "Luva": "Consumíveis > Descartáveis"
+  "Máscara": "Consumíveis > Descartáveis"
+  "Propé": "Consumíveis > Descartáveis"
+  "Sugador": "Consumíveis > Descartáveis"
+  "Touca": "Consumíveis > Descartáveis"
+  "Avental": "Consumíveis > Descartáveis"
+  "Aplicador Descartável": "Consumíveis > Descartáveis"
+  "Rolete de Algodão": "Consumíveis > Descartáveis"
+  "Lençol de Borracha": "Consumíveis > Descartáveis"
+
+  # Endodontia
+  "Lima": "Consumíveis > Endodontia"
+  "Lima Manual": "Consumíveis > Endodontia"
+  "Lima Rotatória": "Consumíveis > Endodontia"
+  "Guta-Percha": "Consumíveis > Endodontia"
+  "Obturador": "Consumíveis > Endodontia"
+  "Localizador Apical": "Equipamentos > Endodontia"
+  "Cone de Papel": "Consumíveis > Endodontia"
+  "Ponta de Papel": "Consumíveis > Endodontia"
+  "Hipoclorito": "Consumíveis > Endodontia"
+  "EDTA": "Consumíveis > Endodontia"
+  "Cimento Endodôntico": "Consumíveis > Endodontia"
+  "Espaçador": "Instrumentos > Endodontia"
+  "Condensador": "Instrumentos > Endodontia"
+
+  # Restauração
+  "Resina": "Consumíveis > Resinas"
+  "Resina Composta": "Consumíveis > Resinas"
+  "Resina Flow": "Consumíveis > Resinas"
+  "Resina Bulk Fill": "Consumíveis > Resinas"
+  "Compômero": "Consumíveis > Resinas"
+  "Ionômero de Vidro": "Consumíveis > Cimentos"
+  "Adesivo": "Consumíveis > Adesivos"
+  "Adesivo Dentinário": "Consumíveis > Adesivos"
+  "Ácido Fosfórico": "Consumíveis > Adesivos"
+  "Primer": "Consumíveis > Adesivos"
+
+  # Cimentos
+  "Cimento": "Consumíveis > Cimentos"
+  "Cimento Resinoso": "Consumíveis > Cimentos"
+  "Cimento Provisório": "Consumíveis > Cimentos"
+  "Cimento de Ionômero": "Consumíveis > Cimentos"
+  "Cimento Fosfato de Zinco": "Consumíveis > Cimentos"
+
+  # Clareamento
+  "Clareador": "Consumíveis > Clareamento"
+  "Clareador Dental": "Consumíveis > Clareamento"
+  "Clareador Caseiro": "Consumíveis > Clareamento"
+  "Clareador de Consultório": "Consumíveis > Clareamento"
+  "Peróxido": "Consumíveis > Clareamento"
+
+  # Moldagem
+  "Alginato": "Consumíveis > Moldagem"
+  "Silicone": "Consumíveis > Moldagem"
+  "Silicone de Adição": "Consumíveis > Moldagem"
+  "Silicone de Condensação": "Consumíveis > Moldagem"
+  "Moldeira": "Consumíveis > Moldagem"
+  "Gesso": "Consumíveis > Moldagem"
+
+  # Profilaxia
+  "Pasta Profilática": "Consumíveis > Profilaxia"
+  "Flúor": "Consumíveis > Profilaxia"
+  "Selante": "Consumíveis > Profilaxia"
+  "Escova Robinson": "Consumíveis > Profilaxia"
+  "Taça de Borracha": "Consumíveis > Profilaxia"
+
+  # Cirurgia
+  "Bisturi": "Instrumentos > Cirúrgicos"
+  "Lâmina de Bisturi": "Instrumentos > Cirúrgicos"
+  "Fio de Sutura": "Instrumentos > Cirúrgicos"
+  "Fio De Sutura": "Instrumentos > Cirúrgicos"
+  "Agulha para Sutura": "Instrumentos > Cirúrgicos"
+  "Porta Agulha": "Instrumentos > Cirúrgicos"
+  "Fórceps": "Instrumentos > Cirúrgicos"
+  "Elevador": "Instrumentos > Cirúrgicos"
+  "Alavanca": "Instrumentos > Cirúrgicos"
+  "Sindesmótomo": "Instrumentos > Cirúrgicos"
+  "Hemostático": "Consumíveis > Cirúrgicos"
+  "Membrana": "Consumíveis > Cirúrgicos"
+  "Enxerto": "Consumíveis > Cirúrgicos"
+
+  # Instrumentos Manuais
+  "Cureta": "Instrumentos > Manuais"
+  "Espátula": "Instrumentos > Manuais"
+  "Sonda": "Instrumentos > Manuais"
+  "Sonda Exploradora": "Instrumentos > Manuais"
+  "Pinça": "Instrumentos > Manuais"
+  "Tesoura": "Instrumentos > Manuais"
+  "Afastador": "Instrumentos > Manuais"
+  "Espelho": "Instrumentos > Manuais"
+  "Escavador": "Instrumentos > Manuais"
+  "Brunidor": "Instrumentos > Manuais"
+
+  # Brocas e Rotatórios
+  "Broca": "Instrumentos > Rotatórios"
+  "Broca Carbide": "Instrumentos > Rotatórios"
+  "Broca Diamantada": "Instrumentos > Rotatórios"
+  "Ponta Diamantada": "Instrumentos > Rotatórios"
+  "Fresa": "Instrumentos > Rotatórios"
+  "Mandril": "Instrumentos > Rotatórios"
+  "Disco": "Instrumentos > Rotatórios"
+  "Tira de Lixa": "Instrumentos > Rotatórios"
+  "Acabamento E Polimento": "Instrumentos > Rotatórios"
+
+  # Ortodontia
+  "Bráquete": "Consumíveis > Ortodontia"
+  "Bráquetes": "Consumíveis > Ortodontia"
+  "Bráquete Reposição": "Consumíveis > Ortodontia"
+  "Tubo": "Consumíveis > Ortodontia"
+  "Arco": "Consumíveis > Ortodontia"
+  "Arco Intraoral": "Consumíveis > Ortodontia"
+  "Elástico": "Consumíveis > Ortodontia"
+  "Elásticos": "Consumíveis > Ortodontia"
+  "Ligadura": "Consumíveis > Ortodontia"
+  "Mola": "Consumíveis > Ortodontia"
+  "Acessórios para Ortodontia": "Consumíveis > Ortodontia"
+
+  # Higiene
+  "Escova Dental": "Higiene > Escovas"
+  "Escova Elétrica": "Higiene > Escovas"
+  "Escova Interdental": "Higiene > Escovas"
+  "Fio Dental": "Higiene > Fio Dental"
+  "Fita Dental": "Higiene > Fio Dental"
+  "Enxaguante": "Higiene > Enxaguantes"
+  "Antisséptico": "Higiene > Enxaguantes"
+  "Creme Dental": "Higiene > Cremes Dentais"
+
+  # Equipamentos
+  "Fotopolimerizador": "Equipamentos > Fotopolimerizadores"
+  "Ultrassom": "Equipamentos > Ultrassom"
+  "Autoclave": "Equipamentos > Autoclave"
+  "Raio-X": "Equipamentos > Raio-X"
+  "Motor": "Equipamentos > Motores"
+  "Caneta de Alta Rotação": "Equipamentos > Peças de Mão"
+  "Contra-Ângulo": "Equipamentos > Peças de Mão"
+  "Micromotor": "Equipamentos > Peças de Mão"
+
+  # Prótese
+  "Dente Artificial": "Consumíveis > Prótese"
+  "Resina Acrílica": "Consumíveis > Prótese"
+  "Articulador": "Instrumentos > Prótese"
