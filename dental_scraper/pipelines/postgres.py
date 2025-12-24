@@ -8,15 +8,21 @@ SUPPLIER_MAPPING = {
     "dental_cremer": ("Dental Cremer", "dental-cremer"),
 }
 
-SIMILARITY_THRESHOLD = 85
+SIMILARITY_THRESHOLD = 100
 
 
-def normalize_name(name):
+def normalize_name(name, quantity=None, unit=None):
     if not name:
         return ""
     name = name.lower()
     name = re.sub(r"[^\w\s]", " ", name)
     name = re.sub(r"\s+", " ", name).strip()
+
+    if quantity and unit:
+        name = f"{name} {quantity}{unit}"
+    elif quantity:
+        name = f"{name} {quantity}"
+
     return name
 
 
@@ -109,12 +115,11 @@ class PostgresPipeline:
 
     def _upsert_supplier_product(self, cur, supplier_id, adapter):
         cur.execute(
-            "SELECT id, current_price, product_id FROM supplier_products WHERE supplier_id = %s AND external_id = %s",
+            "SELECT id, current_price FROM supplier_products WHERE supplier_id = %s AND external_id = %s",
             (supplier_id, adapter.get("external_id")),
         )
         existing = cur.fetchone()
         old_price = existing[1] if existing else None
-        old_product_id = existing[2] if existing else None
 
         cur.execute(
             """
@@ -141,9 +146,10 @@ class PostgresPipeline:
                 pix_price = EXCLUDED.pix_price,
                 original_price = EXCLUDED.original_price,
                 discount_percent = EXCLUDED.discount_percent,
+                product_id = NULL,
                 last_scraped_at = NOW(),
                 updated_at = NOW()
-            RETURNING id, product_id
+            RETURNING id
             """,
             (
                 supplier_id,
@@ -169,9 +175,8 @@ class PostgresPipeline:
         )
         result = cur.fetchone()
         sp_id = result[0]
-        product_id = result[1] if result[1] else old_product_id
 
-        return sp_id, old_price, product_id
+        return sp_id, old_price, None
 
     def _insert_price_history(self, cur, supplier_product_id, adapter):
         cur.execute(
@@ -191,7 +196,9 @@ class PostgresPipeline:
 
     def _try_link_to_master(self, cur, supplier_product_id, adapter):
         name = adapter.get("name")
-        normalized = normalize_name(name)
+        quantity = adapter.get("quantity")
+        unit = adapter.get("unit")
+        normalized = normalize_name(name, quantity, unit)
 
         if not normalized:
             return
@@ -220,8 +227,9 @@ class PostgresPipeline:
     def _create_master_product(self, cur, adapter, normalized_name):
         cur.execute(
             """
-            INSERT INTO products (name, normalized_name, brand, normalized_brand, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, NOW(), NOW())
+            INSERT INTO products (name, normalized_name, brand, normalized_brand, quantity, unit, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
+            ON CONFLICT (normalized_name) DO UPDATE SET updated_at = NOW()
             RETURNING id
             """,
             (
@@ -229,6 +237,8 @@ class PostgresPipeline:
                 normalized_name,
                 adapter.get("brand") or adapter.get("normalized_brand"),
                 adapter.get("normalized_brand"),
+                adapter.get("quantity"),
+                adapter.get("unit"),
             ),
         )
         master_id = cur.fetchone()[0]
