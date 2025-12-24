@@ -7,23 +7,32 @@ mappings:
   "Anestésico Tópico": "Consumíveis > Anestésicos"
   "Agulhas": "Consumíveis > Anestésicos"
   "Agulha Gengival": "Consumíveis > Anestésicos"
+  "Seringa Carpule": "Consumíveis > Anestésicos"
 
   # Descartáveis
   "Algodão": "Consumíveis > Descartáveis"
   "Babador": "Consumíveis > Descartáveis"
   "Gaze": "Consumíveis > Descartáveis"
+  "Compressa de Gaze": "Consumíveis > Descartáveis"
   "Guardanapo": "Consumíveis > Descartáveis"
   "Luva": "Consumíveis > Descartáveis"
   "Luvas": "Consumíveis > Descartáveis"
   "Máscara": "Consumíveis > Descartáveis"
+  "Máscaras": "Consumíveis > Descartáveis"
   "Propé": "Consumíveis > Descartáveis"
   "Sugador": "Consumíveis > Descartáveis"
+  "Sugador Odontológico": "Consumíveis > Descartáveis"
   "Touca": "Consumíveis > Descartáveis"
+  "Toucas": "Consumíveis > Descartáveis"
   "Avental": "Consumíveis > Descartáveis"
   "Aplicador": "Consumíveis > Descartáveis"
+  "Microaplicadores": "Consumíveis > Descartáveis"
   "Rolete": "Consumíveis > Descartáveis"
   "Lençol de Borracha": "Consumíveis > Descartáveis"
   "Kit Cirúrgico": "Consumíveis > Descartáveis"
+  "Toalha Umedecida": "Consumíveis > Descartáveis"
+  "Grampo para Isolamento Absoluto": "Consumíveis > Descartáveis"
+  "Seringa Descartável": "Consumíveis > Descartáveis"
 
   # Endodontia
   "Lima": "Consumíveis > Endodontia"
@@ -64,15 +73,23 @@ mappings:
   "Silicone de Adição": "Consumíveis > Moldagem"
   "Silicone de Condensação": "Consumíveis > Moldagem"
   "Moldeira": "Consumíveis > Moldagem"
+  "Moldeira para Moldagem": "Consumíveis > Moldagem"
   "Gesso": "Consumíveis > Moldagem"
   "Fio Retrator": "Consumíveis > Moldagem"
+  "Registro Oclusal": "Consumíveis > Moldagem"
 
   # Profilaxia
   "Pasta Profilática": "Consumíveis > Profilaxia"
   "Flúor": "Consumíveis > Profilaxia"
   "Selante": "Consumíveis > Profilaxia"
   "Escova Robinson": "Consumíveis > Profilaxia"
+  "Escova de Robinson": "Consumíveis > Profilaxia"
   "Taça de Borracha": "Consumíveis > Profilaxia"
+  "Taça Profilática": "Consumíveis > Profilaxia"
+  "Cinta Profilática": "Consumíveis > Profilaxia"
+  "Pó para Profilaxia": "Consumíveis > Profilaxia"
+  "Evidenciador de Placa": "Consumíveis > Profilaxia"
+  "Verniz": "Consumíveis > Profilaxia"
 
   # Cirurgia
   "Bisturi": "Instrumentos > Cirúrgicos"
@@ -85,17 +102,21 @@ mappings:
   "Alavanca": "Instrumentos > Cirúrgicos"
   "Hemostático": "Consumíveis > Cirúrgicos"
   "Membrana": "Consumíveis > Cirúrgicos"
+  "Descolador": "Instrumentos > Cirúrgicos"
 
   # Instrumentos Manuais
   "Cureta": "Instrumentos > Manuais"
   "Espátula": "Instrumentos > Manuais"
+  "Espátulas": "Instrumentos > Manuais"
   "Sonda": "Instrumentos > Manuais"
   "Sonda Exploradora": "Instrumentos > Manuais"
   "Pinça": "Instrumentos > Manuais"
   "Tesoura": "Instrumentos > Manuais"
   "Afastador": "Instrumentos > Manuais"
   "Espelho": "Instrumentos > Manuais"
+  "Espelho Bucal": "Instrumentos > Manuais"
   "Escavador": "Instrumentos > Manuais"
+  "Alicate": "Instrumentos > Manuais"
 
   # Brocas e Rotatórios
   "Broca": "Instrumentos > Rotatórios"
@@ -118,37 +139,91 @@ mappings:
   "Elástico": "Consumíveis > Ortodontia"
   "Ligadura": "Consumíveis > Ortodontia"
   "Mola": "Consumíveis > Ortodontia"
+  "Aplicador de Amarrilho": "Consumíveis > Ortodontia"
+  "Porta Elástico": "Consumíveis > Ortodontia"
 
   # Higiene
   "Escova Dental": "Higiene > Escovas"
   "Escova Elétrica": "Higiene > Escovas"
+  "Escova Dental Elétrica": "Higiene > Escovas"
   "Escova Interdental": "Higiene > Escovas"
   "Fio Dental": "Higiene > Fio Dental"
   "Fita Dental": "Higiene > Fio Dental"
+  "Cartão Fio Dental": "Higiene > Fio Dental"
   "Enxaguante": "Higiene > Enxaguantes"
   "Enxaguante Bucal": "Higiene > Enxaguantes"
   "Antisséptico": "Higiene > Enxaguantes"
+  "Clorexidina": "Higiene > Enxaguantes"
   "Creme Dental": "Higiene > Cremes Dentais"
+  "Higiene Oral": "Higiene > Geral"
+  "Kit Higiene Oral": "Higiene > Geral"
 
   # Equipamentos
   "Fotopolimerizador": "Equipamentos > Fotopolimerizadores"
   "Ultrassom": "Equipamentos > Ultrassom"
+  "Ponta Ultrassônica": "Equipamentos > Ultrassom"
   "Autoclave": "Equipamentos > Autoclave"
   "Raio-X": "Equipamentos > Raio-X"
   "Motor": "Equipamentos > Motores"
   "Caneta de Alta Rotação": "Equipamentos > Peças de Mão"
+  "Alta Rotação": "Equipamentos > Peças de Mão"
   "Contra-Ângulo": "Equipamentos > Peças de Mão"
   "Micromotor": "Equipamentos > Peças de Mão"
   "Acionador Elétrico": "Equipamentos > Consultório"
   "Cadeira Odontológica": "Equipamentos > Consultório"
   "Refletor": "Equipamentos > Consultório"
   "Mocho": "Equipamentos > Consultório"
+  "Compressor de Ar": "Equipamentos > Consultório"
+
+  # Equipamentos Laboratoriais
+  "Forno": "Equipamentos > Laboratoriais"
+  "Micromotor de Bancada": "Equipamentos > Laboratoriais"
+  "Recortador de Gesso": "Equipamentos > Laboratoriais"
+  "Plastificadora": "Equipamentos > Laboratoriais"
+
+  # Esterilização
+  "Envelope para Esterilização": "Consumíveis > Esterilização"
+  "Estojo para Esterilização": "Consumíveis > Esterilização"
+  "Indicador Biológico": "Consumíveis > Esterilização"
+  "Indicador Químico": "Consumíveis > Esterilização"
+  "Rolo para Esterilização": "Consumíveis > Esterilização"
+  "Seladora": "Equipamentos > Esterilização"
+  "Mini-Incubadora": "Equipamentos > Esterilização"
+  "Água para Autoclave": "Consumíveis > Esterilização"
+  "Lubrificantes": "Consumíveis > Esterilização"
 
   # Prótese
   "Dente Artificial": "Consumíveis > Prótese"
   "Resina Acrílica": "Consumíveis > Prótese"
   "Articulador": "Instrumentos > Prótese"
 
-  # Consultório
+  # Consultório e Organização
   "Acessório para Consultório": "Equipamentos > Consultório"
   "Organizadores": "Equipamentos > Consultório"
+  "Gaveteiro": "Equipamentos > Consultório"
+  "Bandejas": "Equipamentos > Consultório"
+  "Estojo": "Equipamentos > Consultório"
+  "Porta Fio": "Equipamentos > Consultório"
+
+  # Fotografia
+  "Contraste para Fotografia": "Equipamentos > Fotografia"
+  "Espelho para Fotografia": "Equipamentos > Fotografia"
+
+  # Limpeza e Saneantes
+  "Detergente": "Consumíveis > Limpeza"
+  "Saneante": "Consumíveis > Limpeza"
+  "Álcool": "Consumíveis > Limpeza"
+
+  # Papelaria e Impressos
+  "Receituários": "Papelaria > Impressos"
+  "Receitas de Controle Especial": "Papelaria > Impressos"
+  "Atestados": "Papelaria > Impressos"
+  "Ficha Clínica": "Papelaria > Impressos"
+  "Cartões de Visita": "Papelaria > Impressos"
+  "Cartões de Horário": "Papelaria > Impressos"
+  "Plano de Tratamento e Orçamento": "Papelaria > Impressos"
+  "Miolo para Carnê de Controle de Tratamento Odontológico": "Papelaria > Impressos"
+
+  # Kits
+  "Kit Acadêmico": "Kits > Acadêmicos"
+  "Kit Clínico": "Kits > Clínicos"

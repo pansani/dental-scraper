@@ -50,7 +50,7 @@ class DentalCremerSpider(Spider):
         },
     }
 
-    def start_requests(self):
+    async def start(self):
         for category in self.CATEGORIES:
             url = self._build_url(category, page=1)
             yield Request(
@@ -140,8 +140,8 @@ class DentalCremerSpider(Spider):
         categories = product.get("categories", [])
         if categories:
             cat_names = [c.get("name") for c in categories if c.get("name")]
-            for cat_name in cat_names:
-                item["raw_category"] = cat_name
+            if cat_names:
+                item["raw_category"] = cat_names[0]
 
         status = product.get("status")
         item["in_stock"] = status == "available" if status else True

@@ -21,6 +21,8 @@ dependencies = [
     "unidecode>=1.3.0",
     "w3lib>=2.1.0",
     "pyyaml>=6.0.0",
+    "psycopg2-binary>=2.9.0",
+    "itemadapter>=0.8.0",
 ]
 
 [project.optional-dependencies]

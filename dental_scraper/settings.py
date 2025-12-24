@@ -32,7 +32,7 @@ DOWNLOADER_MIDDLEWARES = {
 ITEM_PIPELINES = {
     "dental_scraper.pipelines.cleaner.CleanerPipeline": 100,
     "dental_scraper.pipelines.normalizer.NormalizerPipeline": 200,
-    "dental_scraper.pipelines.exporter.JsonExporterPipeline": 300,
+    "dental_scraper.pipelines.postgres.PostgresPipeline": 300,
 }
 
 DOWNLOAD_HANDLERS = {
@@ -77,3 +77,9 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 LOG_FORMAT = "%(asctime)s [%(name)s] %(levelname)s: %(message)s"
 
 FEED_EXPORT_ENCODING = "utf-8"
+
+DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
+DB_PORT = int(os.getenv("DB_PORT", "54329"))
+DB_NAME = os.getenv("DB_NAME", "dental_radar")
+DB_USER = os.getenv("DB_USER", "dental_radar")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "secret")
