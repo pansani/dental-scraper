@@ -7,8 +7,8 @@ from scrapy import Request, Spider
 from dental_scraper.items import RawProductItem
 
 
-class DentalSpeedApiSpider(Spider):
-    name = "dental_speed_api"
+class DentalSpeedSpider(Spider):
+    name = "dental_speed"
     allowed_domains = ["api.linximpulse.com", "dentalspeed.com"]
 
     API_BASE = "https://api.linximpulse.com/engage/search/v3/navigates"
